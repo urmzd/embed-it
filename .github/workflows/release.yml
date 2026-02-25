@@ -111,8 +111,21 @@ jobs:
           force: ${{ inputs.force }}
           artifacts: "release-assets/*"
 
+    outputs:
+      released: ${{ steps.sr.outputs.released }}
+
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
       - name: Publish to crates.io
-        if: steps.sr.outputs.released == 'true'
         run: cargo publish --allow-dirty
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
